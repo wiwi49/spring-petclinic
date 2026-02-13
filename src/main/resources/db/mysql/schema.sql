@@ -53,3 +53,9 @@ CREATE TABLE IF NOT EXISTS visits (
   description VARCHAR(255),
   FOREIGN KEY (pet_id) REFERENCES pets(id)
 ) engine=InnoDB;
+
+CREATE TABLE petclinic_orders (
+  id BIGINT NOT NULL AUTO_INCREMENT,
+  status VARCHAR(30) NOT NULL,
+  PRIMARY KEY (id)
+);

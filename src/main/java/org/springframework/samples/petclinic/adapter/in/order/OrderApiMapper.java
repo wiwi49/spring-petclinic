@@ -5,11 +5,10 @@ import org.springframework.samples.petclinic.domain.order.Order;
 
 final class OrderApiMapper {
 
-    static OrderResponse toResponse(Order order) {
-        return new OrderResponse(order.getId(), order.getStatus().name());
+    private OrderApiMapper() {
     }
 
-    private OrderApiMapper() {
-        // utility class
+    static OrderResponse toResponse(Order order) {
+        return new OrderResponse(order.getId(), order.getStatus().name());
     }
 }

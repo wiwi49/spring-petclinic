@@ -1,7 +1,5 @@
 package org.springframework.samples.petclinic.adapter.in.order.request;
 
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotBlank;
 
-public record UpdateOrderStatusRequest(
-        @NotNull String status
-) {}
+public record UpdateOrderStatusRequest(@NotBlank String status) { }

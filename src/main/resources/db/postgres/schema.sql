@@ -50,3 +50,8 @@ CREATE TABLE IF NOT EXISTS visits (
   description TEXT
 );
 CREATE INDEX ON visits (pet_id);
+
+CREATE TABLE petclinic_orders (
+  id BIGSERIAL PRIMARY KEY,
+  status VARCHAR(30) NOT NULL
+);
