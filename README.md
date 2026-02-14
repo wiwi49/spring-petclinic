@@ -12,7 +12,12 @@ L’objectif est d’implémenter un nouveau cas métier : la gestion
 du cycle de vie d’une commande (Order), en respectant strictement
 les principes de l’architecture hexagonale (Ports & Adapters).
 
-Ce travail a pour but pédagogique de démontrer :
+Ce travail a un objectif pédagogique clair : transformer une
+application Spring Boot classique en une application mieux
+structurée, plus maintenable et plus testable, en isolant
+le domaine métier des aspects techniques.
+
+Les objectifs principaux sont :
 
 - une séparation claire des responsabilités
 - un domaine métier indépendant des frameworks
@@ -63,8 +68,8 @@ build/reports/tests/test/index.html
 
 Les tests couvrent :
 
-- le domaine métier (Order)
-- les services applicatifs
+- le domaine métier (Order, transitions de statut)
+- les services applicatifs (cas d’usage)
 - le flow complet de gestion d’une commande via des tests d’intégration
 
 ============================================================
@@ -77,7 +82,12 @@ Le projet suit une architecture hexagonale visant à découpler :
 - les cas d’usage
 - les interfaces techniques (REST, JPA)
 
-Organisation des packages :
+Le domaine métier est placé au centre de l’application et ne dépend
+d’aucune technologie spécifique.
+
+------------------------------------------------------------
+
+ORGANISATION DES PACKAGES
 
 domain/
  └── order/
@@ -89,7 +99,7 @@ domain/
 application/
  └── order/
      ├── port/in
-     │    └── Use cases
+     │    └── Use cases (interfaces)
      ├── port/out
      │    └── Ports de persistance
      └── service
@@ -97,27 +107,29 @@ application/
 
 adapter/
  ├── in
- │    └── REST Controller, DTO, Mapper
+ │    └── REST Controller, DTO, Mapper, gestion des erreurs
  └── out
-      └── JPA, Repository, Mapper
+      └── JPA, Repository Spring Data, Mapper de persistance
 
 ------------------------------------------------------------
 
 RÔLE DES COUCHES
 
-DOMAIN
+DOMAIN  
 Contient les règles métier pures.
-Aucune dépendance à Spring ou à la persistance.
+Aucune dépendance à Spring, à JPA ou à la base de données.
 
-APPLICATION
+APPLICATION  
 Implémente les cas d’usage via des ports.
-Orchestre le domaine sans dépendre des frameworks.
+Orchestre le domaine sans dépendre des détails techniques.
 
-ADAPTERS IN
-Exposent l’application via une API REST.
+ADAPTERS IN  
+Exposent l’application vers l’extérieur (API REST).
+Ils dépendent uniquement des ports d’entrée.
 
-ADAPTERS OUT
-Implémentent la persistance (JPA).
+ADAPTERS OUT  
+Implémentent les ports de sortie (persistance).
+Ce sont les seuls composants autorisés à accéder à la base de données.
 
 ============================================================
 
@@ -127,7 +139,7 @@ CRÉATION D’UNE COMMANDE
 
 - Appel via l’API REST
 - Délégation au CreateOrderUseCase
-- Création d’un Order avec le statut initial CREATED
+- Création d’un objet Order avec le statut initial CREATED
 - Persistance via un port de sortie
 
 MISE À JOUR DU STATUT
@@ -143,11 +155,15 @@ Les règles de transition sont centralisées dans :
 
 OrderStatusTransitions
 
+Transitions autorisées :
+
+CREATED → PAID → SHIPPED → DELIVERED
+
 Toute transition invalide déclenche :
 
 InvalidOrderStatusTransitionException
 
-Aucune règle métier n’est implémentée dans les contrôleurs.
+Aucune règle métier n’est implémentée dans les contrôleurs REST.
 
 ============================================================
 
@@ -155,11 +171,11 @@ Aucune règle métier n’est implémentée dans les contrôleurs.
 
 PROFIL PAR DÉFAUT : H2
 
-- Base en mémoire
+- Base de données en mémoire
 - Utilisée pour le développement et les tests
 - Initialisation automatique via scripts SQL
 
-db/h2/schema.sql
+db/h2/schema.sql  
 db/h2/data.sql
 
 PROFIL POSTGRESQL
@@ -168,12 +184,12 @@ Activation :
 
 ./gradlew bootRun --args="--spring.profiles.active=postgres"
 
-Configuration dans :
+Configuration située dans :
 
 application-postgres.properties
 
 Le changement de base de données ne nécessite aucune modification
-du code métier.
+du code métier, ce qui valide l’indépendance du domaine.
 
 ============================================================
 
@@ -183,19 +199,69 @@ Le projet inclut :
 
 - des tests unitaires du domaine Order
 - des tests des services applicatifs
-- un test d’intégration principal :
+- un test d’intégration principal : OrderFlowIntegrationTest
 
-OrderFlowIntegrationTest
+Ce test valide le cycle complet d’une commande :
 
-Ce test valide le cycle complet d’une commande
-de la création à la livraison.
+CREATED → PAID → SHIPPED → DELIVERED
+
+Les tests garantissent :
+
+- la cohérence des règles métier
+- la validité des transitions de statut
+- la robustesse de l’architecture mise en place
 
 ============================================================
 
-8. OBJECTIFS PÉDAGOGIQUES ATTEINTS
+8. TEST DES ENDPOINTS REST
+
+CRÉATION D’UNE COMMANDE
+
+POST /api/orders
+
+Exemple avec curl :
+
+curl -X POST http://localhost:8080/api/orders
+
+Réponse attendue :
+
+{
+  "id": 1,
+  "status": "CREATED"
+}
+
+------------------------------------------------------------
+
+MISE À JOUR DU STATUT D’UNE COMMANDE
+
+PUT /api/orders/{id}/status
+
+Exemple :
+
+curl -X PUT http://localhost:8080/api/orders/1/status \
+     -H "Content-Type: application/json" \
+     -d '{"status":"PAID"}'
+
+Réponse attendue :
+
+{
+  "id": 1,
+  "status": "PAID"
+}
+
+Toute transition invalide retourne une erreur HTTP 400,
+gérée via une exception métier.
+
+============================================================
+
+9. OBJECTIFS PÉDAGOGIQUES ATTEINTS
 
 - Implémentation complète d’une architecture hexagonale
 - Cas métier réaliste et non trivial
 - Séparation stricte du domaine et des frameworks
+- Cas d’usage explicites via des ports
+- Adaptateurs clairement identifiés
 - Tests unitaires et d’intégration fonctionnels
-- Utilisation de profils pour la gestion des bases de données
+- Gestion des bases de données par profils Spring
+
+============================================================
