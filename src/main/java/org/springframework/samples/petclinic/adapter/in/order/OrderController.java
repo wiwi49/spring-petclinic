@@ -14,32 +14,31 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/orders")
 public class OrderController {
 
-    private final CreateOrderUseCase createOrderUseCase;
-    private final UpdateOrderStatusUseCase updateOrderStatusUseCase;
+	private final CreateOrderUseCase createOrderUseCase;
 
-    public OrderController(CreateOrderUseCase createOrderUseCase,
-                           UpdateOrderStatusUseCase updateOrderStatusUseCase) {
-        this.createOrderUseCase = createOrderUseCase;
-        this.updateOrderStatusUseCase = updateOrderStatusUseCase;
-    }
+	private final UpdateOrderStatusUseCase updateOrderStatusUseCase;
 
-    @PostMapping
-    public ResponseEntity<OrderResponse> createOrder() {
-        Order created = createOrderUseCase.create();
-        return ResponseEntity.ok(OrderApiMapper.toResponse(created));
-    }
+	public OrderController(CreateOrderUseCase createOrderUseCase, UpdateOrderStatusUseCase updateOrderStatusUseCase) {
+		this.createOrderUseCase = createOrderUseCase;
+		this.updateOrderStatusUseCase = updateOrderStatusUseCase;
+	}
 
-    @PatchMapping("/{id}/status")
-    public ResponseEntity<OrderResponse> updateStatus(
-            @PathVariable("id") Long id,
-            @Valid @RequestBody UpdateOrderStatusRequest request
-    ) {
-        OrderStatus newStatus = parseStatus(request.status());
-        Order updated = updateOrderStatusUseCase.updateStatus(id, newStatus);
-        return ResponseEntity.ok(OrderApiMapper.toResponse(updated));
-    }
+	@PostMapping
+	public ResponseEntity<OrderResponse> createOrder() {
+		Order created = createOrderUseCase.create();
+		return ResponseEntity.ok(OrderApiMapper.toResponse(created));
+	}
 
-    private OrderStatus parseStatus(String rawStatus) {
-        return OrderStatus.valueOf(rawStatus.trim().toUpperCase());
-    }
+	@PatchMapping("/{id}/status")
+	public ResponseEntity<OrderResponse> updateStatus(@PathVariable("id") Long id,
+			@Valid @RequestBody UpdateOrderStatusRequest request) {
+		OrderStatus newStatus = parseStatus(request.status());
+		Order updated = updateOrderStatusUseCase.updateStatus(id, newStatus);
+		return ResponseEntity.ok(OrderApiMapper.toResponse(updated));
+	}
+
+	private OrderStatus parseStatus(String rawStatus) {
+		return OrderStatus.valueOf(rawStatus.trim().toUpperCase());
+	}
+
 }

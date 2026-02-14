@@ -10,19 +10,19 @@ import org.springframework.stereotype.Service;
 @Service
 public class UpdateOrderStatusService implements UpdateOrderStatusUseCase {
 
-    private final OrderRepositoryPort orderRepository;
+	private final OrderRepositoryPort orderRepository;
 
-    public UpdateOrderStatusService(OrderRepositoryPort orderRepository) {
-        this.orderRepository = orderRepository;
-    }
+	public UpdateOrderStatusService(OrderRepositoryPort orderRepository) {
+		this.orderRepository = orderRepository;
+	}
 
-    @Override
-    public Order updateStatus(Long orderId, OrderStatus newStatus) {
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new OrderNotFoundException(orderId));
+	@Override
+	public Order updateStatus(Long orderId, OrderStatus newStatus) {
+		Order order = orderRepository.findById(orderId).orElseThrow(() -> new OrderNotFoundException(orderId));
 
-        order.changeStatus(newStatus);
+		order.changeStatus(newStatus);
 
-        return orderRepository.save(order);
-    }
+		return orderRepository.save(order);
+	}
+
 }

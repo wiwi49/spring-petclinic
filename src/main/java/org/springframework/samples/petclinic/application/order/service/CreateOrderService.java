@@ -9,15 +9,16 @@ import org.springframework.stereotype.Service;
 @Service
 public class CreateOrderService implements CreateOrderUseCase {
 
-    private final OrderRepositoryPort orderRepositoryPort;
+	private final OrderRepositoryPort orderRepositoryPort;
 
-    public CreateOrderService(OrderRepositoryPort orderRepositoryPort) {
-        this.orderRepositoryPort = orderRepositoryPort;
-    }
+	public CreateOrderService(OrderRepositoryPort orderRepositoryPort) {
+		this.orderRepositoryPort = orderRepositoryPort;
+	}
 
-    @Override
-    public Order create() {
-        Order newOrder = new Order(null, OrderStatus.CREATED);
-        return orderRepositoryPort.save(newOrder);
-    }
+	@Override
+	public Order create() {
+		Order newOrder = new Order(null, OrderStatus.CREATED);
+		return orderRepositoryPort.save(newOrder);
+	}
+
 }
